@@ -1,0 +1,14 @@
+venv/
+backend/__pycache__/
+backend/**/__pycache__/
+*.pyc
+.env
+
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
