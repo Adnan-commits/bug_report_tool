@@ -6,7 +6,8 @@ Converts an informal issue description into a structured, developer-ready bug re
 
 - **Python 3.10+**
 - **Node.js 18+** and npm
-- **A Groq API key** — required. Get one free at https://console.groq.com/keys (sign up, go to "API Keys", create a new key). Without this key the backend will not start.
+- **A Groq API key** — required. Get one free at https://console.groq.com/keys (sign up, go to "API Keys", create a new key, no credit card, ~2 minutes). Without this key the backend will not start.
+- **Docker Desktop** (optional, only if running via Docker Compose) — https://www.docker.com/products/docker-desktop/
 
 ## Project structure
 
@@ -17,6 +18,7 @@ bug_report/
 │   ├── mcp_server.py       MCP tool, same logic, for agent callers
 │   ├── groq_client.py      Single Groq call shared by both interfaces
 │   ├── schema.py           Pydantic schema — shared response shape
+│   ├── Dockerfile          Container build for the backend
 │   ├── .env                Your Groq API key goes here (you create this)
 │   └── .env.example        Template for the above
 ├── frontend/
@@ -26,12 +28,17 @@ bug_report/
 │   │   │   ├── ReportEditor.jsx
 │   │   │   └── ExportPreview.jsx
 │   │   └── lib/api.js
+│   ├── Dockerfile          Container build for the frontend
 │   └── package.json
+├── docker-compose.yml
+├── .dockerignore
 ├── requirements.txt
 └── README.md
 ```
 
-## 1. Backend setup
+## Option A: Run locally (Python + Node)
+
+### 1. Backend setup
 
 Open a terminal in the project root.
 
@@ -62,7 +69,7 @@ uvicorn main:app --reload --port 8000
 
 Leave this terminal running. You should see `Application startup complete`. Confirm it's up by visiting http://localhost:8000/health in a browser — it should return `{"status":"ok"}`.
 
-## 2. Frontend setup
+### 2. Frontend setup
 
 Open a **second** terminal in the project root.
 
@@ -74,7 +81,7 @@ npm run dev
 
 Open http://localhost:5173 in your browser. The backend must already be running (step 1) for report generation to work.
 
-## 3. (Optional) MCP server, for agent access
+### 3. (Optional) MCP server, for agent access
 
 The MCP server exposes the same bug-report logic as a tool other agents (Claude Desktop, MCP Inspector, etc.) can call directly, without going through the web form.
 
@@ -92,11 +99,48 @@ npx @modelcontextprotocol/inspector
 
 In the Inspector UI: Transport Type `STDIO`, Command `python`, Arguments `mcp_server.py`, then click Connect.
 
+## Option B: Run with Docker
+
+Requires Docker Desktop installed and running.
+
+**1. Add your API key.** Docker Compose reads it from `backend/.env`, this file is not included in the repo (it's gitignored for security). Create it before starting:
+
+```cmd
+cd backend
+copy .env.example .env
+```
+
+Edit `backend\.env` and paste in your key:
+
+```
+GROQ_API_KEY=your_actual_key_here
+```
+
+**2. Build and start both services** from the project root:
+
+```cmd
+cd ..
+docker compose up --build
+```
+
+First run takes a few minutes while images build. Watch the logs for `Uvicorn running on http://0.0.0.0:8000` from the backend service with no errors.
+
+**3. Verify:**
+- http://localhost:8000/health → should return `{"status":"ok"}`
+- http://localhost:5173 → app UI, submit a test description end to end
+
+**4. Stop:**
+
+```cmd
+Ctrl+C
+docker compose down
+```
+
 ## Environment variables reference
 
 | Variable | Required | Where | Description |
 |---|---|---|---|
-| `GROQ_API_KEY` | Yes | `backend/.env` | Your Groq API key. The app calls `llama-3.3-70b-versatile` via Groq's chat completions API. |
+| `GROQ_API_KEY` | Yes | `backend/.env` | Your Groq API key. The app calls `llama-3.3-70b-versatile` via Groq's chat completions API. Never committed to the repo, both local and Docker setups require you to supply your own. |
 
 No other environment variables or API keys are needed.
 
@@ -113,6 +157,8 @@ No other environment variables or API keys are needed.
 - **`TypeError: Client.__init__() got an unexpected keyword argument 'proxies'`**: version mismatch between `groq` and `httpx`. Run `pip install --upgrade groq` inside the activated venv.
 - **Frontend shows a network error**: confirm the backend is running on port 8000 and `frontend/src/lib/api.js` points to `http://localhost:8000`.
 - **CORS error in browser console**: confirm the frontend is running on port 5173 (`main.py`'s CORS config only allows that origin by default).
+- **Docker build fails or hangs**: confirm Docker Desktop is fully started (steady whale icon, not animating) before running `docker compose up`.
+- **Docker backend container exits immediately**: almost always a missing or empty `backend/.env`, see Option B step 1.
 
 ## Roadmap
 
