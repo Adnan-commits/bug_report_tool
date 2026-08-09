@@ -9,6 +9,15 @@ Converts an informal issue description into a structured, developer-ready bug re
 - **A Groq API key** — required. Get one free at https://console.groq.com/keys (sign up, go to "API Keys", create a new key, no credit card, ~2 minutes). Without this key the backend will not start.
 - **Docker Desktop** (optional, only if running via Docker Compose) — https://www.docker.com/products/docker-desktop/
 
+## Screenshots
+
+**Describe the bug**
+![Bug description form](/screenshots/bug_report_view.png)
+
+**Structured, editable report**
+![Generated bug report](/screenshots/input_view.png)
+
+
 ## Project structure
 
 ```
