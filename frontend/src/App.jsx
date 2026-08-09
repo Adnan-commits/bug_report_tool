@@ -2,6 +2,7 @@ import { useState } from "react";
 import { generateBugReport } from "./lib/api";
 import ReportEditor from "./components/ReportEditor";
 import ExportPreview from "./components/ExportPreview";
+import SkeletonLoader from "./components/SkeletonLoader";
 import "./style.css";
 
 const TYPE_LABEL = {
@@ -9,6 +10,12 @@ const TYPE_LABEL = {
   question: "question",
   unclear: "unclear",
 };
+
+const EXAMPLES = [
+  "login button doesn't respond on mobile when the keyboard is open",
+  "app crashes on launch for iOS 17 users since yesterday's update",
+  "export button doesn't do anything when clicked",
+];
 
 // phase: form | loading | editing | exporting | error | not-a-bug
 export default function App() {
@@ -71,6 +78,19 @@ export default function App() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+          <div style={{ marginTop: 10, display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {EXAMPLES.map((ex) => (
+              <button
+                type="button"
+                key={ex}
+                className="icon-btn"
+                style={{ border: "1px solid var(--border)", borderRadius: 999, padding: "4px 10px" }}
+                onClick={() => setDescription(ex)}
+              >
+                try: "{ex.slice(0, 28)}..."
+              </button>
+            ))}
+          </div>
           <div className="actions" style={{ borderTop: "none", paddingTop: 12 }}>
             <span />
             <button className="btn btn-primary" type="submit" disabled={!description.trim()}>
@@ -80,9 +100,7 @@ export default function App() {
         </form>
       )}
 
-      {phase === "loading" && (
-        <div className="state-msg">Generating structured report...</div>
-      )}
+      {phase === "loading" && <SkeletonLoader />}
 
       {phase === "not-a-bug" && report && (
         <div className="card">
@@ -101,10 +119,14 @@ export default function App() {
       )}
 
       {phase === "error" && (
-        <div className="card">
-          <div className="state-msg error">{error}</div>
-          <div className="actions" style={{ borderTop: "none" }}>
-            <button className="btn btn-ghost" onClick={handleReset}>Try again</button>
+        <div className="card error-card">
+          <div className="error-icon">!</div>
+          <div className="error-body">
+            <div className="error-title">Couldn't generate a report</div>
+            <div className="error-detail">{error}</div>
+            <div className="actions" style={{ borderTop: "none", paddingLeft: 0 }}>
+              <button className="btn btn-ghost" onClick={handleReset}>Rewrite and try again</button>
+            </div>
           </div>
         </div>
       )}

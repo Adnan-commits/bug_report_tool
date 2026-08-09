@@ -21,6 +21,10 @@ class GeneratedReport(BaseModel):
     expected_behavior: Optional[str] = None
     actual_behavior: Optional[str] = None
 
+    # Field names the model had to infer rather than being told explicitly.
+    # e.g. ["severity", "environment"] if the user never stated those.
+    inferred_fields: Optional[list[str]] = None
+
 
 # Backward-compatible alias used by editor/export once type == "bug"
 BugReport = GeneratedReport
