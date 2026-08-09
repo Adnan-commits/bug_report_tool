@@ -12,10 +12,10 @@ Converts an informal issue description into a structured, developer-ready bug re
 ## Screenshots
 
 **Describe the bug**
-![Bug description form](/screenshots/bug_report_view.png)
+![Bug description form](/screenshots/input_view.png)
 
 **Structured, editable report**
-![Generated bug report](/screenshots/input_view.png)
+![Generated bug report](/screenshots/bug_report_view.png)
 
 
 ## Project structure
